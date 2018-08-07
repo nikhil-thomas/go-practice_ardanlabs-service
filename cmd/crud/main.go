@@ -9,6 +9,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/nikhil-thomas/go-practice_ardanlabs-service/internal/platform/db"
+
 	"github.com/nikhil-thomas/go-practice_ardanlabs-service/cmd/crud/handlers"
 )
 
@@ -21,15 +23,31 @@ func main() {
 	readTimeout := 5 * time.Second
 	writeTimeout := 10 * time.Second
 	shutdownTimeout := 5 * time.Second
+	dbTimeout := 25 * time.Second
 	host := os.Getenv("HOST")
 	if host == "" {
 		host = ":3000"
 	}
 
+	dbHost := os.Getenv("DB_HOST")
+	if dbHost == "" {
+		//set default dbhost
+		dbHost = "localhost"
+	}
+
+	// Start mongodb
+	log.Println("main started: Initialize Mongo")
+	masterDB, err := db.New(dbHost, dbTimeout)
+	if err != nil {
+		log.Fatalf("startup : Register DB : %v", err)
+	}
+	defer masterDB.Close()
+
+	log.Println("main started: Initialize Server")
 	// Start service
 	server := http.Server{
 		Addr:           host,
-		Handler:        handlers.API(),
+		Handler:        handlers.API(masterDB),
 		ReadTimeout:    readTimeout,
 		WriteTimeout:   writeTimeout,
 		MaxHeaderBytes: 1 << 20,

@@ -16,6 +16,9 @@ var (
 
 	// ErrInvalidID occurs when an ID is not in a valid form
 	ErrInvalidID = errors.New("ID is not in it's proper form")
+
+	// ErrDBNotConfigured occurs when DB is not configured
+	ErrDBNotConfigured = errors.New("DB not initialized")
 )
 
 // JSONError is the response for errors that occur within the API
