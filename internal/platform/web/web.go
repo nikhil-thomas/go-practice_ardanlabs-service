@@ -21,8 +21,9 @@ const KeyValues ctxKey = 1
 
 // Values represent state of each request
 type Values struct {
-	TraceID string
-	Now     time.Time
+	TraceID    string
+	Now        time.Time
+	StatusCode int
 }
 
 // Handler is a type that handle http requests within this app
