@@ -110,5 +110,4 @@ func testMain(m *testing.M) int {
 	defer masterDB.Close()
 
 	return m.Run()
-
 }
