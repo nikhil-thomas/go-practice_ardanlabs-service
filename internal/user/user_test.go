@@ -84,7 +84,6 @@ func TestUser(t *testing.T) {
 				t.Fatalf("\t%s\tShould not be able to retrieve user : %s.", Failed, err)
 			}
 			t.Logf("\t%s\tShould not be able to retrieve user.", Success)
-
 		}
 	}
 }

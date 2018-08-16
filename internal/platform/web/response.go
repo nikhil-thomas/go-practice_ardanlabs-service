@@ -19,11 +19,15 @@ var (
 
 	// ErrDBNotConfigured occurs when DB is not configured
 	ErrDBNotConfigured = errors.New("DB not initialized")
+
+	// ErrValidation occurs when there are validtaion errors
+	ErrValidation = errors.New("Validation errors occured")
 )
 
 // JSONError is the response for errors that occur within the API
 type JSONError struct {
-	Error string `json:"error"`
+	Error  string       `json:"error"`
+	Fields InvalidError `json:"fields, omitempty"`
 }
 
 // Error handles all error responses for the API
@@ -32,8 +36,20 @@ func Error(ctx context.Context, w http.ResponseWriter, err error) {
 	case ErrNotFound:
 		RespondError(ctx, w, err, http.StatusNotFound)
 		return
+	case ErrValidation:
+		RespondError(ctx, w, err, http.StatusBadRequest)
 	case ErrInvalidID:
 		RespondError(ctx, w, err, http.StatusBadRequest)
+		return
+	}
+
+	switch e := errors.Cause(err).(type) {
+	case InvalidError:
+		v := JSONError{
+			Error:  "field validation faliure",
+			Fields: e,
+		}
+		Respond(ctx, w, v, http.StatusBadRequest)
 		return
 	}
 	RespondError(ctx, w, err, http.StatusInternalServerError)

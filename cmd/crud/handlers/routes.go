@@ -21,5 +21,9 @@ func API(masterDB *db.DB) http.Handler {
 	}
 
 	app.Handle("GET", "/v1/users", u.List)
+	app.Handle("POST", "/v1/users", u.Create)
+	app.Handle("GET", "/v1/users/:id", u.Retrieve)
+	app.Handle("PUT", "/v1/users/:id", u.Update)
+	app.Handle("DELETE", "/v1/users:id", u.Delete)
 	return app
 }
