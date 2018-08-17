@@ -45,10 +45,10 @@ func New(mw ...Middleware) *App {
 }
 
 // Handle is the mechanism to to mount Handlers for a given HTTP verp and path pair
-func (a *App) Handle(verb, path string, handler Handler) {
+func (a *App) Handle(verb, path string, handler Handler, mw ...Middleware) {
 
 	// function to execute for each request
-	handler = wrapMiddleware(handler, a.mw)
+	handler = wrapMiddleware(wrapMiddleware(handler, mw), a.mw)
 	h := func(w http.ResponseWriter, r *http.Request, params map[string]string) {
 		// Set the context with the required values to process the request
 		v := Values{
