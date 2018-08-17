@@ -50,9 +50,16 @@ func (a *App) Handle(verb, path string, handler Handler, mw ...Middleware) {
 	// function to execute for each request
 	handler = wrapMiddleware(wrapMiddleware(handler, mw), a.mw)
 	h := func(w http.ResponseWriter, r *http.Request, params map[string]string) {
-		// Set the context with the required values to process the request
+
+		// Check the reqeust for an existing TraceId
+		// if not generate a new one
+
+		traceID := r.Header.Get(TraceIDHeader)
+		if traceID == "" {
+			traceID = uuid.New()
+		}
 		v := Values{
-			TraceID: uuid.New(),
+			TraceID: traceID,
 			Now:     time.Now(),
 		}
 		ctx := context.WithValue(r.Context(), KeyValues, &v)

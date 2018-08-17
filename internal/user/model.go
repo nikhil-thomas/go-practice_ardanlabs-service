@@ -6,12 +6,12 @@ import (
 
 // CreateUser contains information needed to create of update a user
 type CreateUser struct {
-	UserType     int        `json:"type" validate:"required"`
-	FirstName    string     `json:"first_name" validate:"required"`
-	LastName     string     `json:"last_name" validate:"required"`
-	Email        string     `json:"email" validate:"required"`
-	Company      string     `json:"company" validate:"required"`
-	DateModified *time.Time `json:"-"`
+	UserType     int        `bson:"type" json:"type" validate:"required"`
+	FirstName    string     `bson:"first_name" json:"first_name" validate:"required"`
+	LastName     string     `bson:"last_name" json:"last_name" validate:"required"`
+	Email        string     `bson:"email" json:"email" validate:"required"`
+	Company      string     `bson:"company" json:"company" validate:"required"`
+	DateModified *time.Time `bson:"date_modified" json:"-"`
 }
 
 // User contains information about a user

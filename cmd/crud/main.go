@@ -24,7 +24,7 @@ func main() {
 	readTimeout := 5 * time.Second
 	writeTimeout := 10 * time.Second
 	shutdownTimeout := 5 * time.Second
-	dbTimeout := 25 * time.Second
+	dbDialTimeout := 5 * time.Second
 	host := os.Getenv("HOST")
 	if host == "" {
 		host = ":3000"
@@ -38,7 +38,7 @@ func main() {
 
 	// Start mongodb
 	log.Println("main started: Initialize Mongo")
-	masterDB, err := db.New(dbHost, dbTimeout)
+	masterDB, err := db.New(dbHost, dbDialTimeout)
 	if err != nil {
 		log.Fatalf("startup : Register DB : %v", err)
 	}
