@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/nikhil-thomas/go-practice_ardanlabs-service/internal/platform/db"
@@ -65,7 +66,7 @@ func main() {
 
 	// Shutdown
 	osSignals := make(chan os.Signal, 1)
-	signal.Notify(osSignals, os.Interrupt)
+	signal.Notify(osSignals, os.Interrupt, syscall.SIGTERM)
 	<-osSignals
 
 	// context for shutdown call

@@ -1,0 +1,8 @@
+# docker build -t crud-amd64:1 .
+# docker run -d --name crud-amd64 -p 3000:3000 crud-amd64:1
+# docker start crud-amd64:1
+
+FROM alpine
+LABEL maintainer="nikhilthomas1@gmail.com"
+COPY ./crud /crud
+ENTRYPOINT ["/crud"]
