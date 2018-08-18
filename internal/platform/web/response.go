@@ -34,6 +34,7 @@ func Error(ctx context.Context, w http.ResponseWriter, err error) {
 	switch errors.Cause(err) {
 	case ErrNotHealthy:
 		RespondError(ctx, w, err, http.StatusInternalServerError)
+		return
 	case ErrNotFound:
 		RespondError(ctx, w, err, http.StatusNotFound)
 		return

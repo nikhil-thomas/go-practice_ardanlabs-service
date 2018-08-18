@@ -7,7 +7,6 @@ import (
 	_ "net/http/pprof"
 	"os"
 	"os/signal"
-	"sync"
 	"syscall"
 	"time"
 
@@ -83,34 +82,34 @@ func main() {
 		MaxHeaderBytes: 1 << 20,
 	}
 
-	// Starting the service, listening for requests
-	var wg sync.WaitGroup
-	wg.Add(1)
+	// channel to collect errors from server
+	// make it buffered so that go routine can exit even if we dont't collect the error
+	serverErrors := make(chan error, 1)
 
 	go func() {
 		log.Printf("startup : Listening %s", apiHost)
-		log.Printf("shutdown : Listener closed : %v", api.ListenAndServe())
-		wg.Done()
+		serverErrors <- api.ListenAndServe()
 	}()
 
-	// Shutdown
+	// make a channel to listen to interupt or terminate signal from the OS
+	// signal package requires a buffered channel
 	osSignals := make(chan os.Signal, 1)
 	signal.Notify(osSignals, os.Interrupt, syscall.SIGTERM)
-	<-osSignals
 
-	// context for shutdown call
-	ctx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
-	defer cancel()
+	select {
+	case err := <-serverErrors:
+		log.Fatalf("Error starting servevr: %v", err)
+	case <-osSignals:
+		ctx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
+		defer cancel()
 
-	// Asking listenter to shutdown and load shed
-	if err := api.Shutdown(ctx); err != nil {
-		log.Printf("shutdown : Graceful shutdown didnot complete in %v : %v", shutdownTimeout, err)
-
-		if err := api.Close(); err != nil {
-			log.Printf("shutdown : Error kiling server : %v", err)
+		if err := api.Shutdown(ctx); err != nil {
+			log.Printf("Graceful shutdown didnot complete in %v : %v", shutdownTimeout, err)
+			if err := api.Close(); err != nil {
+				log.Fatalf("Could not stop http server: %v", err)
+			}
 		}
 	}
 
-	wg.Wait()
 	log.Println("main completed")
 }
