@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/nikhil-thomas/go-practice_ardanlabs-service/internal/platform/web"
-
 	mgo "gopkg.in/mgo.v2"
 
 	"github.com/nikhil-thomas/go-practice_ardanlabs-service/internal/platform/db"
@@ -15,6 +13,14 @@ import (
 )
 
 const usersCollection = "users"
+
+var (
+	// ErrNotFound is error not found error
+	ErrNotFound = errors.New("Entity not found")
+
+	// ErrInvalidID occurs when an ID is not in valid form
+	ErrInvalidID = errors.New("ID is not in it's proper form")
+)
 
 // Create inserts a new user into the database
 func Create(ctx context.Context, dbConn *db.DB, cu *CreateUser) (*User, error) {
@@ -73,7 +79,7 @@ func List(ctx context.Context, dbConn *db.DB) ([]User, error) {
 // Retrieve gets the specified user from the databse
 func Retrieve(ctx context.Context, dbConn *db.DB, userID string) (*User, error) {
 	if !bson.IsObjectIdHex(userID) {
-		return nil, errors.Wrapf(web.ErrInvalidID, "bson:IsObjectIddHex: %s", userID)
+		return nil, errors.Wrapf(ErrInvalidID, "bson:IsObjectIddHex: %s", userID)
 	}
 
 	q := bson.M{"user_id": userID}
@@ -86,7 +92,7 @@ func Retrieve(ctx context.Context, dbConn *db.DB, userID string) (*User, error) 
 
 	if err := dbConn.Execute(ctx, usersCollection, f); err != nil {
 		if err == mgo.ErrNotFound {
-			return nil, web.ErrNotFound
+			return nil, ErrNotFound
 		}
 		return nil, errors.Wrap(err, fmt.Sprintf("db.users.find(%s)", db.Query(q)))
 	}
@@ -96,7 +102,7 @@ func Retrieve(ctx context.Context, dbConn *db.DB, userID string) (*User, error) 
 // Update replaces a user document in the database
 func Update(ctx context.Context, dbConn *db.DB, userID string, cu *CreateUser) error {
 	if !bson.IsObjectIdHex(userID) {
-		return errors.Wrap(web.ErrInvalidID, "check objectid")
+		return errors.Wrap(ErrInvalidID, "check objectid")
 	}
 
 	now := time.Now().UTC()
@@ -113,7 +119,7 @@ func Update(ctx context.Context, dbConn *db.DB, userID string, cu *CreateUser) e
 	}
 	if err := dbConn.Execute(ctx, usersCollection, f); err != nil {
 		if err == mgo.ErrNotFound {
-			return web.ErrNotFound
+			return ErrNotFound
 		}
 		return errors.Wrap(err, fmt.Sprintf("db.customers.update(%s, %s)", db.Query(q), db.Query(m)))
 	}
@@ -123,7 +129,7 @@ func Update(ctx context.Context, dbConn *db.DB, userID string, cu *CreateUser) e
 // Delete removes a user from the database
 func Delete(ctx context.Context, dbConn *db.DB, userID string) error {
 	if !bson.IsObjectIdHex(userID) {
-		return errors.Wrapf(web.ErrInvalidID, "bson.IsObjectIDHex: %s", userID)
+		return errors.Wrapf(ErrInvalidID, "bson.IsObjectIDHex: %s", userID)
 	}
 
 	q := bson.M{"user_id": userID}
@@ -133,7 +139,7 @@ func Delete(ctx context.Context, dbConn *db.DB, userID string) error {
 	}
 	if err := dbConn.Execute(ctx, usersCollection, f); err != nil {
 		if err == mgo.ErrNotFound {
-			return web.ErrNotFound
+			return ErrNotFound
 		}
 		return errors.Wrap(err, fmt.Sprintf("db.users.remove(%s)", db.Query(q)))
 	}

@@ -4,8 +4,6 @@ import (
 	"os"
 	"testing"
 
-	"github.com/nikhil-thomas/go-practice_ardanlabs-service/internal/platform/web"
-
 	"github.com/nikhil-thomas/go-practice_ardanlabs-service/internal/platform/tests"
 	"github.com/nikhil-thomas/go-practice_ardanlabs-service/internal/user"
 )
@@ -103,7 +101,7 @@ func TestUser(t *testing.T) {
 			t.Logf("\t%s\tShould be able to delete user.", tests.Success)
 
 			usr, err = user.Retrieve(ctx, dbConn, newUsr.UserID)
-			if err != web.ErrNotFound {
+			if err != user.ErrNotFound {
 				t.Fatalf("\t%s\tShould not be able to retrieve user : %s.", tests.Failed, err)
 			}
 			t.Logf("\t%s\tShould not be able to retrieve user.", tests.Success)
