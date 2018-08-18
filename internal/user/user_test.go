@@ -28,10 +28,7 @@ func TestUser(t *testing.T) {
 		t.Log("\t when handling a single user")
 		{
 			ctx := tests.Context()
-			dbConn, err := test.MasterDB.Copy()
-			if err != nil {
-				t.Fatalf("\t%s\tshould be able to connect to mongo : %s.", tests.Failed, err)
-			}
+			dbConn := test.MasterDB.Copy()
 			t.Logf("\t%s\tShould be able to connect to mongo.", tests.Success)
 			defer dbConn.Close()
 

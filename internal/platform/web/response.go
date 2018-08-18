@@ -14,10 +14,7 @@ var (
 	ErrNotFound = errors.New("Entity not found")
 
 	// ErrInvalidID occurs when an ID is not in a valid form
-	ErrInvalidID = errors.New("ID is not in it's proper form")
-
-	// ErrDBNotConfigured occurs when DB is not configured
-	ErrDBNotConfigured = errors.New("DB not initialized")
+	ErrInvalidID = errors.New("ID is not in its proper form")
 
 	// ErrValidation occurs when there are validtaion errors
 	ErrValidation = errors.New("Validation errors occured")

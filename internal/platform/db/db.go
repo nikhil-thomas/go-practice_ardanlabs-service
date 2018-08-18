@@ -50,14 +50,14 @@ func (db *DB) Close() {
 }
 
 // Copy returns a new DB value for use with MongoDB based the master session
-func (db *DB) Copy() (*DB, error) {
+func (db *DB) Copy() *DB {
 	ses := db.session.Copy()
 	newDB := DB{
 		database: ses.DB(""),
 		session:  ses,
 	}
 
-	return &newDB, nil
+	return &newDB
 }
 
 // Execute is used to execute MongoDB Commands

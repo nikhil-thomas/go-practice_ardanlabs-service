@@ -19,7 +19,7 @@ var (
 	ErrNotFound = errors.New("Entity not found")
 
 	// ErrInvalidID occurs when an ID is not in valid form
-	ErrInvalidID = errors.New("ID is not in it's proper form")
+	ErrInvalidID = errors.New("ID is not in its proper form")
 )
 
 // Create inserts a new user into the database
