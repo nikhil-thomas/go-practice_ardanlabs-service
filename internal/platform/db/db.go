@@ -1,7 +1,6 @@
 package db
 
 import (
-	"context"
 	"encoding/json"
 	"time"
 
@@ -49,7 +48,7 @@ func (db *DB) Close() {
 	db.session.Close()
 }
 
-// Copy returns a new DB value for use with MongoDB based the master session
+// Copy returns a new DB value for use with MongoDB based on master session
 func (db *DB) Copy() *DB {
 	ses := db.session.Copy()
 	newDB := DB{
@@ -61,7 +60,7 @@ func (db *DB) Copy() *DB {
 }
 
 // Execute is used to execute MongoDB Commands
-func (db *DB) Execute(ctx context.Context, collName string, f func(*mgo.Collection) error) error {
+func (db *DB) Execute(collName string, f func(*mgo.Collection) error) error {
 	if db == nil || db.session == nil {
 		return errors.Wrap(ErrInvalidDBProvided, "db == nil || db.session == nil")
 	}
@@ -69,7 +68,7 @@ func (db *DB) Execute(ctx context.Context, collName string, f func(*mgo.Collecti
 }
 
 // ExecuteTimeout is used to execute MongoDB commands witha a timeout
-func (db *DB) ExecuteTimeout(ctx context.Context, collName string, f func(*mgo.Collection) error, timeout time.Duration) error {
+func (db *DB) ExecuteTimeout(timeout time.Duration, collName string, f func(*mgo.Collection) error) error {
 	if db == nil || db.session == nil {
 		return errors.Wrap(ErrInvalidDBProvided, "db == nil || db.session == nil")
 	}
