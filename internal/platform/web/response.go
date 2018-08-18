@@ -3,7 +3,6 @@ package web
 import (
 	"context"
 	"encoding/json"
-	"io"
 	"log"
 	"net/http"
 
@@ -69,9 +68,16 @@ func Respond(ctx context.Context, w http.ResponseWriter, data interface{}, code 
 	v := ctx.Value(KeyValues).(*Values)
 	v.StatusCode = code
 
-	if code == http.StatusNoContent {
+	if code == http.StatusNoContent || data == nil {
 		w.WriteHeader(code)
 		return
+	}
+
+	// Marshal data into json string
+	jsonData, err := json.MarshalIndent(data, "", " ")
+	if err != nil {
+		log.Printf("%s : Respond %v Marshalling JSON response", v.TraceID, err)
+		RespondError(ctx, w, err, http.StatusInternalServerError)
 	}
 
 	// Set content type
@@ -80,13 +86,6 @@ func Respond(ctx context.Context, w http.ResponseWriter, data interface{}, code 
 	// Write staus code
 	w.WriteHeader(code)
 
-	// Marshal data into json string
-	jsonData, err := json.MarshalIndent(data, "", " ")
-	if err != nil {
-		log.Printf("%s : Respond %v Marshalling JSON response", v.TraceID, err)
-		jsonData = []byte("{}")
-	}
-
 	// send result to client
-	io.WriteString(w, string(jsonData))
+	w.Write(jsonData)
 }
