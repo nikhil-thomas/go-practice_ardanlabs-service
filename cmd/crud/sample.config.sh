@@ -1,0 +1,15 @@
+#!/bin/bash
+
+export CRUD_READ_TIMEOUT=5
+
+export CRUD_WRITE_TIMEOUT=5
+
+export CRUD_SHUTDOWN_TIMEOUT=5
+
+export CRUD_DB_DIAL_TIMEOUT=5
+
+export CRUD_API_HOST=0.0.0.0:0000
+
+export CRUD_DEBUG_HOST=0.0.0.0:0000
+
+export CRUD_DB_HOST=0.0.0.0
