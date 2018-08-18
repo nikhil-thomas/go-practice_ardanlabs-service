@@ -19,6 +19,8 @@ func ErrorHandler(next web.Handler) web.Handler {
 		// in the event of panic capture error and send down the stack
 		defer func() {
 			if r := recover(); r != nil {
+
+				v.Error = true
 				//Log the panic
 				log.Printf("%s : ERROR : Panic Caught : %s\n", v.TraceID, r)
 
@@ -31,6 +33,9 @@ func ErrorHandler(next web.Handler) web.Handler {
 		}()
 
 		if err := next(ctx, w, r, params); err != nil {
+
+			v.Error = true
+
 			err := errors.Cause(err)
 
 			if err != web.ErrNotFound {
