@@ -31,8 +31,9 @@ func ErrorHandler(next web.Handler) web.Handler {
 		}()
 
 		if err := next(ctx, w, r, params); err != nil {
-			if errors.Cause(err) != web.ErrNotFound {
-				// Log the error
+			err := errors.Cause(err)
+
+			if err != web.ErrNotFound {
 				log.Printf("%s : ERROR : %v\n", v.TraceID, err)
 			}
 

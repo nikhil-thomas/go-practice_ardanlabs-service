@@ -14,7 +14,7 @@ services:
     ports:
       - 4000:3000
     environment:
-      - DB_HOST=<db host>
+      - DB_HOST=localhost
 
 volumes:
   console-data:

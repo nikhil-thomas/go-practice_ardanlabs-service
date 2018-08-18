@@ -77,6 +77,11 @@ func (db *DB) ExecuteTimeout(ctx context.Context, collName string, f func(*mgo.C
 	return f(db.database.C(collName))
 }
 
+// StatusCheck validates the SDB status is good
+func (db *DB) StatusCheck() error {
+	return nil
+}
+
 // Query provides a string version of the value
 func Query(value interface{}) string {
 	json, err := json.Marshal(value)

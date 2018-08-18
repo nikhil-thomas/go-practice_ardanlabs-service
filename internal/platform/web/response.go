@@ -22,6 +22,9 @@ var (
 
 	// ErrValidation occurs when there are validtaion errors
 	ErrValidation = errors.New("Validation errors occured")
+
+	// ErrNotHealthy occurs when the service is not working properly
+	ErrNotHealthy = errors.New("Not Healthy")
 )
 
 // JSONError is the response for errors that occur within the API
@@ -33,12 +36,12 @@ type JSONError struct {
 // Error handles all error responses for the API
 func Error(ctx context.Context, w http.ResponseWriter, err error) {
 	switch errors.Cause(err) {
+	case ErrNotHealthy:
+		RespondError(ctx, w, err, http.StatusInternalServerError)
 	case ErrNotFound:
 		RespondError(ctx, w, err, http.StatusNotFound)
 		return
-	case ErrValidation:
-		RespondError(ctx, w, err, http.StatusBadRequest)
-	case ErrInvalidID:
+	case ErrValidation, ErrInvalidID:
 		RespondError(ctx, w, err, http.StatusBadRequest)
 		return
 	}

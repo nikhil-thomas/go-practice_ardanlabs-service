@@ -4,27 +4,73 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"runtime/debug"
 	"testing"
 	"time"
+
+	"github.com/pborman/uuid"
 
 	"github.com/nikhil-thomas/go-practice_ardanlabs-service/internal/platform/db"
 	"github.com/nikhil-thomas/go-practice_ardanlabs-service/internal/platform/docker"
 	"github.com/nikhil-thomas/go-practice_ardanlabs-service/internal/platform/web"
-
-	"github.com/pborman/uuid"
 )
 
-// Test set up
+// Success and failure markers
 var (
 	Success = "\u2713"
 	Failed  = "\u2717"
 )
 
-// MasterDB represents the master MOngo session
-// This will work since we are starting mongo from a container
-var MasterDB *db.DB
+func init() {
+	log.SetFlags(log.LstdFlags | log.Lmicroseconds | log.Lshortfile)
+}
 
-// Context returns returns an app level context for testing
+// Test owns state for running/shutting down tests
+type Test struct {
+	MasterDB  *db.DB
+	container *docker.Container
+}
+
+// New is the entry poinbt for tests
+func New() *Test {
+	var test Test
+
+	var err error
+
+	test.container, err = docker.StartMongo()
+
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	dbDialTimeout := 25 * time.Second
+	dbHost := fmt.Sprintf("mongodb://localhost:%s/gotraining", test.container.Port)
+
+	log.Println("main: started: Initialize Mongo")
+	test.MasterDB, err = db.New(dbHost, dbDialTimeout)
+	if err != nil {
+		log.Fatalf("startup : Register DB : %v", err)
+	}
+
+	return &test
+}
+
+// TearDown shutting down tests
+func (t *Test) TearDown() {
+	t.MasterDB.Close()
+	if err := docker.StopMongo(t.container); err != nil {
+		log.Println(err)
+	}
+}
+
+// Recover prevensts panics from blocking the test from cleanup
+func Recover(t *testing.T) {
+	if r := recover(); r != nil {
+		t.Fatal("Unhandled Exception:", string(debug.Stack()))
+	}
+}
+
+// Context returns an app level context for testing
 func Context() context.Context {
 	values := web.Values{
 		TraceID: uuid.New(),
@@ -32,32 +78,4 @@ func Context() context.Context {
 	}
 
 	return context.WithValue(context.Background(), web.KeyValues, &values)
-}
-
-// Main is the entry poinbt for tests
-func Main(m *testing.M) int {
-
-	c, err := docker.StartMongo()
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	defer func() {
-		if err := docker.StopMongo(c); err != nil {
-			log.Println(err)
-		}
-	}()
-
-	dbDialTimeout := 25 * time.Second
-	dbHost := fmt.Sprintf("mongodb://localhost:%s/gotraining", c.Port)
-
-	log.Println("main: started: Initialize Mongo")
-	MasterDB, err = db.New(dbHost, dbDialTimeout)
-	if err != nil {
-		log.Fatalf("startup : Register DB : %v", err)
-	}
-
-	defer MasterDB.Close()
-
-	return m.Run()
 }
