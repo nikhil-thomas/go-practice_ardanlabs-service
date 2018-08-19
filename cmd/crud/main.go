@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net/http"
 	_ "net/http/pprof"
@@ -71,7 +70,13 @@ func main() {
 		//set default dbhost
 		dbHost = "localhost"
 	}
-	fmt.Println(c.Log())
+	log.Printf("%s=%v", "READ_TIMEOUT", readTimeout)
+	log.Printf("%s=%v", "WRITE_TIMEOUT", writeTimeout)
+	log.Printf("%s=%v", "SHUTDOWN_TIMEOUT", shutdownTimeout)
+	log.Printf("%s=%v", "DB_DIAL_TIMEOUT", dbDialTimeout)
+	log.Printf("%s=%v", "API_HOST", apiHost)
+	log.Printf("%s=%v", "DEBUG_HOST", debugHost)
+	log.Printf("%s=%v", "DB_HOST", dbHost)
 
 	// Start mongodb
 	log.Println("main started: Initialize Mongo")
@@ -119,6 +124,8 @@ func main() {
 	// signal package requires a buffered channel
 	osSignals := make(chan os.Signal, 1)
 	signal.Notify(osSignals, os.Interrupt, syscall.SIGTERM)
+
+	log.Println("main : Start shutdown...")
 
 	select {
 	case err := <-serverErrors:
