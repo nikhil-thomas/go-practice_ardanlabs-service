@@ -54,8 +54,8 @@ func main() {
 	signal.Notify(osSignals, os.Interrupt, syscall.SIGTERM)
 	<-osSignals
 
-	log.Println("metric main : shutdown...")
+	defer log.Println("main : Completed")
 
 	console.Stop()
-	log.Println("main : Completed")
+
 }
