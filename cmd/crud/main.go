@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	_ "expvar"
 	"log"
 	"net/http"
 	_ "net/http/pprof"

@@ -1,6 +1,9 @@
 package expvar
 
 import (
+	"encoding/json"
+	"fmt"
+	"log"
 	"net"
 	"net/http"
 	"time"
@@ -33,6 +36,7 @@ func New(host string) (*Expvar, error) {
 		tr:   &tr,
 		client: http.Client{
 			Transport: &tr,
+			Timeout:   1 * time.Second,
 		},
 	}
 
@@ -41,6 +45,33 @@ func New(host string) (*Expvar, error) {
 
 // Collect pulls metrics from the configured host
 // Collect implements the console.Colelctor interface
-func (exp *Expvar) Collect() string {
-	return "metrics"
+func (exp *Expvar) Collect() (map[string]interface{}, error) {
+	req, err := http.NewRequest(http.MethodGet, exp.host, nil)
+	log.Println(exp.host)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	resp, err := exp.client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	data := make(map[string]interface{})
+	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
+		return nil, err
+	}
+
+	memStats, ok := (data["memstats"]).(map[string]interface{})
+	if ok {
+		data["heap"] = memStats["Alloc"]
+	}
+
+	delete(data, "memStats")
+	delete(data, "cmdline")
+
+	return data, nil
+
+	return nil, nil
 }

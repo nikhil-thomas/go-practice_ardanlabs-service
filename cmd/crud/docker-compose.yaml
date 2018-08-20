@@ -15,6 +15,9 @@ services:
       - 4000:3000
     environment:
       - DB_HOST=localhost
-
+  metrics:
+    networks:
+      - shared-network
+    image: metrics-amd64:1
 volumes:
   console-data:
