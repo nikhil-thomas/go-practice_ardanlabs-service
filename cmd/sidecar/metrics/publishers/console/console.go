@@ -61,15 +61,20 @@ func (con *Console) publish() {
 		return
 	}
 
-	log.Println(marshal(data))
+	out, err := marshal(data)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	log.Println(out)
 }
 
 // marshal marshals data from map to json string
-func marshal(data map[string]interface{}) string {
+func marshal(data map[string]interface{}) (string, error) {
 	out, err := json.MarshalIndent(data, "", " ")
 	if err != nil {
 		log.Println(err)
-		return "'"
+		return "", err
 	}
-	return string(out)
+	return string(out), nil
 }

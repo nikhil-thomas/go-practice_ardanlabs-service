@@ -73,7 +73,7 @@ func (exp *Expvar) Collect() (map[string]interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	data["host"] = u.Host
+	data["host"] = u.Hostname()
 
 	delete(data, "memStats")
 	delete(data, "cmdline")

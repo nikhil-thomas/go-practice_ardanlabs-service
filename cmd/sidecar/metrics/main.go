@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/nikhil-thomas/go-practice_ardanlabs-service/cmd/sidecar/metrics/collectors/expvar"
-	"github.com/nikhil-thomas/go-practice_ardanlabs-service/cmd/sidecar/metrics/publishers/console"
+	"github.com/nikhil-thomas/go-practice_ardanlabs-service/cmd/sidecar/metrics/publishers/datadog"
 	"github.com/nikhil-thomas/go-practice_ardanlabs-service/internal/platform/cfg"
 )
 
@@ -43,9 +43,9 @@ func main() {
 		log.Fatalf("startup : Starting expavar collector : %v", err)
 	}
 
-	console, err := console.New(expvar, interval)
+	datadog, err := datadog.New(expvar, interval)
 	if err != nil {
-		log.Fatalf("startup : Starting console publisher : %v", err)
+		log.Fatalf("startup : Starting datadog publisher : %v", err)
 	}
 
 	// make channel to listen for an interupt or terminate signal form the OS
@@ -56,6 +56,6 @@ func main() {
 
 	defer log.Println("main : Completed")
 
-	console.Stop()
+	datadog.Stop()
 
 }
