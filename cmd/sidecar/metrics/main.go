@@ -8,8 +8,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/nikhil-thomas/go-practice_ardanlabs-service/cmd/sidecar/metrics/collectors/expvar"
-	"github.com/nikhil-thomas/go-practice_ardanlabs-service/cmd/sidecar/metrics/publishers/datadog"
+	"github.com/nikhil-thomas/go-practice_ardanlabs-service/cmd/sidecar/metrics/collector"
+	"github.com/nikhil-thomas/go-practice_ardanlabs-service/cmd/sidecar/metrics/publisher"
 	"github.com/nikhil-thomas/go-practice_ardanlabs-service/internal/platform/cfg"
 )
 
@@ -33,19 +33,32 @@ func main() {
 		interval = 5 * time.Second
 	}
 
+	publishTo, err := c.String("PUBLISHER")
+	if err != nil {
+		publishTo = "CONSOLE"
+	}
+
 	log.Printf("%s=%s", "API_HOST", apiHost)
 	log.Printf("%s=%s", "INTERVAL", interval)
+	log.Printf("%s=%s", "PUBLISHER", publishTo)
 
 	// Start collectors and publishers
 
-	expvar, err := expvar.New(apiHost)
+	expvar, err := collector.New(apiHost)
 	if err != nil {
-		log.Fatalf("startup : Starting expavar collector : %v", err)
+		log.Fatalf("startup : Starting collector : %v", err)
 	}
 
-	datadog, err := datadog.New(expvar, interval)
+	f := publisher.Console
+
+	switch publishTo {
+	case publisher.TypeDatadog:
+		f = publisher.Datadog
+	}
+
+	publish, err := publisher.New(expvar, f, interval)
 	if err != nil {
-		log.Fatalf("startup : Starting datadog publisher : %v", err)
+		log.Fatalf("startup : Starting publisher : %v", err)
 	}
 
 	// make channel to listen for an interupt or terminate signal form the OS
@@ -56,6 +69,6 @@ func main() {
 
 	defer log.Println("main : Completed")
 
-	datadog.Stop()
+	publish.Stop()
 
 }

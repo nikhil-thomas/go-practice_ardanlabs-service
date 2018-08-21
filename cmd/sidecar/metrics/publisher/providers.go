@@ -1,77 +1,27 @@
-package datadog
+package publisher
 
 import (
 	"encoding/json"
 	"log"
-	"sync"
-	"time"
 )
 
-// Collector defines a collector interface
-// to retrieve metrics
-type Collector interface {
-	Collect() (map[string]interface{}, error)
-}
+// set possible publisher types
+const (
+	TypeConsole = "CONSOLE"
+	TypeDatadog = "DATADOG"
+)
 
-// Datadog provides te ability to receive metrics
-// from internal services using expvar
-type Datadog struct {
-	collector Collector
-	wg        sync.WaitGroup
-	timer     *time.Timer
-	shutdown  chan struct{}
-}
-
-// New creates a Datadog based consumer
-func New(collector Collector, interval time.Duration) (*Datadog, error) {
-	dg := Datadog{
-		collector: collector,
-		timer:     time.NewTimer(interval),
-		shutdown:  make(chan struct{}),
-	}
-
-	dg.wg.Add(1)
-	go func() {
-		defer dg.wg.Done()
-		for {
-			dg.timer.Reset(interval)
-			select {
-			case <-dg.timer.C:
-				dg.publish()
-			case <-dg.shutdown:
-				return
-			}
-		}
-	}()
-
-	return &dg, nil
-}
-
-// Stop is used to shutdown the goroutine colelcting metrics
-func (dg *Datadog) Stop() {
-	close(dg.shutdown)
-	dg.wg.Wait()
-}
-
-// publish collects metrics and publishes metrics in datadog
-func (dg *Datadog) publish() {
-	data, err := dg.collector.Collect()
+// Console handles metrics for direct display on console
+func Console(data map[string]interface{}) {
+	out, err := json.MarshalIndent(data, "", " ")
 	if err != nil {
-		log.Println(err)
 		return
 	}
-
-	out, err := marshal(data)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-	log.Println(out)
+	log.Println(string(out))
 }
 
-// marshal handles the marshaling of the map to a datadog json
-func marshal(data map[string]interface{}) (string, error) {
-
+// Datadog processes metrics for delivry to Datadog
+func Datadog(data map[string]interface{}) {
 	/*
 	   {"series" : [
 	                   {
@@ -134,8 +84,8 @@ func marshal(data map[string]interface{}) (string, error) {
 
 	out, err := json.MarshalIndent(d, "", " ")
 	if err != nil {
-		return "", err
+		return
 	}
 
-	return string(out), nil
+	log.Println(string(out))
 }

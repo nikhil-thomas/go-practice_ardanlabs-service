@@ -1,4 +1,4 @@
-package expvar
+package collector
 
 import (
 	"encoding/json"
