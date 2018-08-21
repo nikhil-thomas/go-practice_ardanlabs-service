@@ -10,7 +10,7 @@ services:
   crud:
     networks:
       - shared-network
-    image: crud-amd64:1
+    image: crud-amd64
     ports:
       - 4000:3000
     environment:
@@ -18,6 +18,4 @@ services:
   metrics:
     networks:
       - shared-network
-    image: metrics-amd64:1
-volumes:
-  console-data:
+    image: metrics-amd64

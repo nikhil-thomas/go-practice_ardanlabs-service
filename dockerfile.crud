@@ -1,0 +1,26 @@
+# $ cd $GOPATH/src/github.com/nikhil-thomas/service
+$ $ docker build -t crud-amd64 -f dockerfile.crud .
+# $ docker run -d --name crud-amd64 -p 3000:3000 -e DB_HOST=<dbhost> crud-amd64
+
+# Stage 0
+
+# Build Go binary
+
+FROM golang
+
+ENV CGO_ENABLED 0
+
+RUN mkdir -p /go/src/github.com/nikhil-thomas/go-practice_ardanlabs-service
+WORKDIR /go/src/github.com/nikhil-thomas/go-practice_ardanlabs-service/cmd/crud
+ADD . /go/src/github.com/nikhil-thomas/go-practice_ardanlabs-service
+
+RUN go build -ldflags "-s -w -X main.build=$(git rev-parse HEAD)" -a -tags netgo
+
+# Stage 1
+
+# Run Go binary in Alpine
+
+FROM alpine:3.7
+COPY --from=0 /go/src/github.com/nikhil-thomas/go-practice_ardanlabs-service/cmd/crud/crud /bin/
+EXPOSE 3000
+ENTRYPOINT [ "/bin/crud" ]
