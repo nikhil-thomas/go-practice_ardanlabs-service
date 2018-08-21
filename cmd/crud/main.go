@@ -33,7 +33,7 @@ func main() {
 
 	c, err := cfg.New(cfg.EnvProvider{Namespace: "CRUD"})
 	if err != nil {
-		log.Printf("%s all configs defaults in use", err)
+		log.Printf("config : %s all configs defaults in use", err)
 	}
 
 	readTimeout, err := c.Duration("READ_TIMEOUT")
@@ -71,19 +71,19 @@ func main() {
 		//set default dbhost
 		dbHost = "localhost"
 	}
-	log.Printf("%s=%v", "READ_TIMEOUT", readTimeout)
-	log.Printf("%s=%v", "WRITE_TIMEOUT", writeTimeout)
-	log.Printf("%s=%v", "SHUTDOWN_TIMEOUT", shutdownTimeout)
-	log.Printf("%s=%v", "DB_DIAL_TIMEOUT", dbDialTimeout)
-	log.Printf("%s=%v", "API_HOST", apiHost)
-	log.Printf("%s=%v", "DEBUG_HOST", debugHost)
-	log.Printf("%s=%v", "DB_HOST", dbHost)
+	log.Printf("config : %s=%v", "READ_TIMEOUT", readTimeout)
+	log.Printf("config : %s=%v", "WRITE_TIMEOUT", writeTimeout)
+	log.Printf("config : %s=%v", "SHUTDOWN_TIMEOUT", shutdownTimeout)
+	log.Printf("config : %s=%v", "DB_DIAL_TIMEOUT", dbDialTimeout)
+	log.Printf("config : %s=%v", "API_HOST", apiHost)
+	log.Printf("config : %s=%v", "DEBUG_HOST", debugHost)
+	log.Printf("config : %s=%v", "DB_HOST", dbHost)
 
 	// Start mongodb
 	log.Println("main started: Initialize Mongo")
 	masterDB, err := db.New(dbHost, dbDialTimeout)
 	if err != nil {
-		log.Fatalf("startup : Register DB : %v", err)
+		log.Fatalf("main : Register DB : %v", err)
 	}
 	defer masterDB.Close()
 
@@ -98,8 +98,8 @@ func main() {
 	}
 
 	go func() {
-		log.Printf("startup : Debug Listening %s", debugHost)
-		log.Printf("shutdown : Debug Listener closed : %v", debug.ListenAndServe())
+		log.Printf("main : Debug Listening %s", debugHost)
+		log.Printf("main : Debug Listener closed : %v", debug.ListenAndServe())
 	}()
 
 	log.Println("main started: Initialize Server")
@@ -117,7 +117,7 @@ func main() {
 	serverErrors := make(chan error, 1)
 
 	go func() {
-		log.Printf("startup : Listening %s", apiHost)
+		log.Printf("main : Listening %s", apiHost)
 		serverErrors <- api.ListenAndServe()
 	}()
 
@@ -131,16 +131,16 @@ func main() {
 
 	select {
 	case err := <-serverErrors:
-		log.Fatalf("Error starting servevr: %v", err)
+		log.Fatalf("main : Error starting servevr: %v", err)
 	case <-osSignals:
 		log.Println("main : Start shutdown...")
 		ctx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
 		defer cancel()
 
 		if err := api.Shutdown(ctx); err != nil {
-			log.Printf("Graceful shutdown didnot complete in %v : %v", shutdownTimeout, err)
+			log.Printf("main : Graceful shutdown didnot complete in %v : %v", shutdownTimeout, err)
 			if err := api.Close(); err != nil {
-				log.Fatalf("Could not stop http server: %v", err)
+				log.Fatalf("main : Could not stop http server: %v", err)
 			}
 		}
 	}

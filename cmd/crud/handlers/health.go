@@ -23,8 +23,10 @@ func (h *Health) Check(ctx context.Context, w http.ResponseWriter, r *http.Reque
 	}
 
 	data := struct {
-		Health string `json:"health"`
-	}{"ok"}
+		Status string `json:"status"`
+	}{
+		Status: "ok",
+	}
 
 	web.Respond(ctx, w, data, http.StatusOK)
 	return nil

@@ -6,6 +6,12 @@ import (
 	"time"
 )
 
+// set possible publisher types
+const (
+	TypeConsole = "CONSOLE"
+	TypeDatadog = "DATADOG"
+)
+
 // Collector defines a contract a collector must support
 // so a consume can retrieve metrics
 type Collector interface {

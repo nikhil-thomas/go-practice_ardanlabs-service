@@ -20,7 +20,7 @@ func init() {
 func main() {
 	c, err := cfg.New(cfg.EnvProvider{Namespace: "METRICS"})
 	if err != nil {
-		fmt.Printf("%s. All config defaults in use.", err)
+		fmt.Printf("config : %s. All config defaults in use.", err)
 	}
 
 	apiHost, err := c.String("API_HOST")
@@ -38,27 +38,45 @@ func main() {
 		publishTo = "CONSOLE"
 	}
 
-	log.Printf("%s=%s", "API_HOST", apiHost)
-	log.Printf("%s=%s", "INTERVAL", interval)
-	log.Printf("%s=%s", "PUBLISHER", publishTo)
+	dataDogAPIKey, err := c.String("DATADOG_APIKEY")
+	if err != nil {
+		dataDogAPIKey = ""
+	}
+
+	dataDogHost, err := c.String("DATADOG_HOST")
+	if err != nil {
+		dataDogAPIKey = "https://app.datadoghq.com/api/v1/series"
+	}
+
+	log.Printf("config : %s=%s", "API_HOST", apiHost)
+	log.Printf("config : %s=%s", "INTERVAL", interval)
+	log.Printf("config : %s=%s", "PUBLISHER", publishTo)
+	log.Printf("config : %s=%s", "DATADOG_APIKEY", dataDogAPIKey)
+	log.Printf("config : %s=%s", "DATADOG_HOST", dataDogHost)
 
 	// Start collectors and publishers
 
 	expvar, err := collector.New(apiHost)
 	if err != nil {
-		log.Fatalf("startup : Starting collector : %v", err)
+		log.Fatalf("main : Starting collector : %v", err)
 	}
 
 	f := publisher.Console
 
 	switch publishTo {
+	case publisher.TypeConsole:
+		log.Println("config : PUB_TYPE=Console")
 	case publisher.TypeDatadog:
-		f = publisher.Datadog
+		log.Println("config : PUB_TYPE=Datadog")
+		d := publisher.NewDatadog(dataDogAPIKey, dataDogHost)
+		f = d.Publish
+	default:
+		log.Fatalln("main : No publisher provided, using Console.")
 	}
 
 	publish, err := publisher.New(expvar, f, interval)
 	if err != nil {
-		log.Fatalf("startup : Starting publisher : %v", err)
+		log.Fatalf("main : Starting publisher : %v", err)
 	}
 
 	// make channel to listen for an interupt or terminate signal form the OS
