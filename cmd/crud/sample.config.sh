@@ -13,3 +13,5 @@ export CRUD_API_HOST=0.0.0.0:0000
 export CRUD_DEBUG_HOST=0.0.0.0:0000
 
 export CRUD_DB_HOST=0.0.0.0
+
+export CRUD_TRACE_HOST=0.0.0.0:0
