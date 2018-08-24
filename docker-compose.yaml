@@ -7,15 +7,32 @@ networks:
   shared-network:
     driver: bridge
 services:
+
+mongo:
+  networks:
+    - shared-network
+    image: mongo
+    ports:
+      - 27107:27107
+      command: --bind_ip 0.0.0.0
   crud:
     networks:
       - shared-network
     image: crud-amd64
     ports:
-      - 4000:3000
+      - 3000:3000
+      - 4000:4000
     environment:
-      - DB_HOST=localhost
+      - CRUD_DB_HOST=mongo:27017/gotraining
+      - CRUD_ZIPKIN_HOST=zipkin:9411/api/v2/spans
   metrics:
     networks:
       - shared-network
     image: metrics-amd64
+  zipkin:
+    networks:
+      - shared-network
+    image: openzipkin/zipkin
+    container_name: zipkin
+    ports:
+      - 9411:9411

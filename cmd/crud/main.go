@@ -12,6 +12,10 @@ import (
 	"time"
 
 	"github.com/nikhil-thomas/go-practice_ardanlabs-service/internal/platform/cfg"
+	openzipkin "github.com/openzipkin/zipkin-go"
+	ziphttp "github.com/openzipkin/zipkin-go/reporter/http"
+	"go.opencensus.io/exporter/zipkin"
+	"go.opencensus.io/trace"
 
 	"github.com/nikhil-thomas/go-practice_ardanlabs-service/internal/platform/db"
 
@@ -71,6 +75,13 @@ func main() {
 		//set default dbhost
 		dbHost = "localhost"
 	}
+
+	zipkinHost, err := c.String("ZIPKIN_HOST")
+	if zipkinHost == "" {
+		//set default zipkinHost
+		zipkinHost = "http://0.0.0.0:9411/api/v2/spans"
+	}
+
 	log.Printf("config : %s=%v", "READ_TIMEOUT", readTimeout)
 	log.Printf("config : %s=%v", "WRITE_TIMEOUT", writeTimeout)
 	log.Printf("config : %s=%v", "SHUTDOWN_TIMEOUT", shutdownTimeout)
@@ -78,6 +89,7 @@ func main() {
 	log.Printf("config : %s=%v", "API_HOST", apiHost)
 	log.Printf("config : %s=%v", "DEBUG_HOST", debugHost)
 	log.Printf("config : %s=%v", "DB_HOST", dbHost)
+	log.Printf("config : %s=%v", "ZIPKIN_HOST", zipkinHost)
 
 	// Start mongodb
 	log.Println("main started: Initialize Mongo")
@@ -86,6 +98,22 @@ func main() {
 		log.Fatalf("main : Register DB : %v", err)
 	}
 	defer masterDB.Close()
+
+	// start tracing service
+	log.Printf("main : Tracing Started %s", zipkinHost)
+
+	localEndpoint, err := openzipkin.NewEndpoint("crud", apiHost)
+	if err != nil {
+		log.Fatalf("main : OpenZipkin Endpoint : %v", err)
+	}
+
+	reporter := ziphttp.NewReporter(zipkinHost)
+	defer reporter.Close()
+
+	exporter := zipkin.NewExporter(reporter, localEndpoint)
+	trace.RegisterExporter(exporter)
+
+	trace.ApplyConfig(trace.Config{DefaultSampler: trace.AlwaysSample()})
 
 	// /debug/vars - Added to the default mux by the expvars package
 	// /debug/pprof Added to the default mux by the net/http/pprof package
@@ -134,6 +162,7 @@ func main() {
 		log.Fatalf("main : Error starting servevr: %v", err)
 	case <-osSignals:
 		log.Println("main : Start shutdown...")
+
 		ctx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
 		defer cancel()
 
