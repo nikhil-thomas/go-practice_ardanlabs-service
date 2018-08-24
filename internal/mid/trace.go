@@ -25,14 +25,6 @@ func Trace(next web.Handler) web.Handler {
 	h := func(ctx context.Context, w http.ResponseWriter, r *http.Request, params map[string]string) error {
 		v := ctx.Value(web.KeyValues).(*web.Values)
 
-		ctx, err := tag.New(ctx,
-			tag.Insert(idkey, "testing tag"),
-		)
-
-		if err != nil {
-			log.Println("midware : ERROR :", err)
-		}
-
 		// Add a SPAN for this request
 		ctx, span := trace.StartSpan(ctx, v.TraceID)
 		defer span.End()

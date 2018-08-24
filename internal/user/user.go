@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"go.opencensus.io/trace"
 	mgo "gopkg.in/mgo.v2"
 
 	"github.com/nikhil-thomas/go-practice_ardanlabs-service/internal/platform/db"
@@ -24,6 +25,10 @@ var (
 
 // Create inserts a new user into the database
 func Create(ctx context.Context, dbConn *db.DB, cu *CreateUser) (*User, error) {
+
+	ctx, span := trace.StartSpan(ctx, "internal.user.create")
+	defer span.End()
+
 	now := time.Now().UTC()
 
 	u := User{
@@ -56,7 +61,7 @@ func Create(ctx context.Context, dbConn *db.DB, cu *CreateUser) (*User, error) {
 		return collection.Insert(&u)
 	}
 
-	if err := dbConn.Execute(usersCollection, f); err != nil {
+	if err := dbConn.Execute(ctx, usersCollection, f); err != nil {
 		return nil, errors.Wrap(err, fmt.Sprintf("db.users.insert(%s)", db.Query(&u)))
 	}
 	return &u, nil
@@ -64,12 +69,16 @@ func Create(ctx context.Context, dbConn *db.DB, cu *CreateUser) (*User, error) {
 
 // List retrieves a list of existing uisers from the database
 func List(ctx context.Context, dbConn *db.DB) ([]User, error) {
+
+	ctx, span := trace.StartSpan(ctx, "internal.user.list")
+	defer span.End()
+
 	u := []User{}
 
 	f := func(collection *mgo.Collection) error {
 		return collection.Find(nil).All(&u)
 	}
-	if err := dbConn.Execute(usersCollection, f); err != nil {
+	if err := dbConn.Execute(ctx, usersCollection, f); err != nil {
 		return nil, errors.Wrap(err, "db.users.find()")
 	}
 
@@ -78,6 +87,10 @@ func List(ctx context.Context, dbConn *db.DB) ([]User, error) {
 
 // Retrieve gets the specified user from the databse
 func Retrieve(ctx context.Context, dbConn *db.DB, userID string) (*User, error) {
+
+	ctx, span := trace.StartSpan(ctx, "internal.user.retrieve")
+	defer span.End()
+
 	if !bson.IsObjectIdHex(userID) {
 		return nil, errors.Wrapf(ErrInvalidID, "bson:IsObjectIddHex: %s", userID)
 	}
@@ -90,7 +103,7 @@ func Retrieve(ctx context.Context, dbConn *db.DB, userID string) (*User, error) 
 		return collection.Find(q).One(&u)
 	}
 
-	if err := dbConn.Execute(usersCollection, f); err != nil {
+	if err := dbConn.Execute(ctx, usersCollection, f); err != nil {
 		if err == mgo.ErrNotFound {
 			return nil, ErrNotFound
 		}
@@ -101,6 +114,10 @@ func Retrieve(ctx context.Context, dbConn *db.DB, userID string) (*User, error) 
 
 // Update replaces a user document in the database
 func Update(ctx context.Context, dbConn *db.DB, userID string, cu *CreateUser) error {
+
+	ctx, span := trace.StartSpan(ctx, "internal.user.update")
+	defer span.End()
+
 	if !bson.IsObjectIdHex(userID) {
 		return errors.Wrap(ErrInvalidID, "check objectid")
 	}
@@ -117,7 +134,7 @@ func Update(ctx context.Context, dbConn *db.DB, userID string, cu *CreateUser) e
 	f := func(collection *mgo.Collection) error {
 		return collection.Update(q, m)
 	}
-	if err := dbConn.Execute(usersCollection, f); err != nil {
+	if err := dbConn.Execute(ctx, usersCollection, f); err != nil {
 		if err == mgo.ErrNotFound {
 			return ErrNotFound
 		}
@@ -128,6 +145,10 @@ func Update(ctx context.Context, dbConn *db.DB, userID string, cu *CreateUser) e
 
 // Delete removes a user from the database
 func Delete(ctx context.Context, dbConn *db.DB, userID string) error {
+
+	ctx, span := trace.StartSpan(ctx, "internal.user.delete")
+	defer span.End()
+
 	if !bson.IsObjectIdHex(userID) {
 		return errors.Wrapf(ErrInvalidID, "bson.IsObjectIDHex: %s", userID)
 	}
@@ -137,7 +158,7 @@ func Delete(ctx context.Context, dbConn *db.DB, userID string) error {
 	f := func(collection *mgo.Collection) error {
 		return collection.Remove(q)
 	}
-	if err := dbConn.Execute(usersCollection, f); err != nil {
+	if err := dbConn.Execute(ctx, usersCollection, f); err != nil {
 		if err == mgo.ErrNotFound {
 			return ErrNotFound
 		}

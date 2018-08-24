@@ -1,10 +1,12 @@
 package db
 
 import (
+	"context"
 	"encoding/json"
 	"time"
 
 	"github.com/pkg/errors"
+	"go.opencensus.io/trace"
 	"gopkg.in/mgo.v2"
 )
 
@@ -60,7 +62,10 @@ func (db *DB) Copy() *DB {
 }
 
 // Execute is used to execute MongoDB Commands
-func (db *DB) Execute(collName string, f func(*mgo.Collection) error) error {
+func (db *DB) Execute(ctx context.Context, collName string, f func(*mgo.Collection) error) error {
+	ctx, span := trace.StartSpan(ctx, "platform.DB.Execute")
+	defer span.End()
+
 	if db == nil || db.session == nil {
 		return errors.Wrap(ErrInvalidDBProvided, "db == nil || db.session == nil")
 	}
@@ -68,7 +73,11 @@ func (db *DB) Execute(collName string, f func(*mgo.Collection) error) error {
 }
 
 // ExecuteTimeout is used to execute MongoDB commands witha a timeout
-func (db *DB) ExecuteTimeout(timeout time.Duration, collName string, f func(*mgo.Collection) error) error {
+func (db *DB) ExecuteTimeout(ctx context.Context, timeout time.Duration, collName string, f func(*mgo.Collection) error) error {
+
+	ctx, span := trace.StartSpan(ctx, "platform.DB.ExecuteTimeout")
+	defer span.End()
+
 	if db == nil || db.session == nil {
 		return errors.Wrap(ErrInvalidDBProvided, "db == nil || db.session == nil")
 	}
@@ -77,7 +86,9 @@ func (db *DB) ExecuteTimeout(timeout time.Duration, collName string, f func(*mgo
 }
 
 // StatusCheck validates the SDB status is good
-func (db *DB) StatusCheck() error {
+func (db *DB) StatusCheck(ctx context.Context) error {
+	ctx, span := trace.StartSpan(ctx, "platform.DB.StatusCheck")
+	defer span.End()
 	return nil
 }
 

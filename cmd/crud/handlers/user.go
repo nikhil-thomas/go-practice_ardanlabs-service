@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/nikhil-thomas/go-practice_ardanlabs-service/internal/user"
+	"go.opencensus.io/trace"
 
 	"github.com/nikhil-thomas/go-practice_ardanlabs-service/internal/platform/db"
 	"github.com/nikhil-thomas/go-practice_ardanlabs-service/internal/platform/web"
@@ -29,6 +30,10 @@ type User struct {
 
 // List returns all the existing users in the system
 func (u *User) List(ctx context.Context, w http.ResponseWriter, r *http.Request, params map[string]string) error {
+
+	ctx, span := trace.StartSpan(ctx, "handlers.User.List")
+	defer span.End()
+
 	dbConn := u.MasterDB.Copy()
 	defer dbConn.Close()
 
@@ -45,6 +50,10 @@ func (u *User) List(ctx context.Context, w http.ResponseWriter, r *http.Request,
 
 // Retrieve returns the specified user from the system
 func (u *User) Retrieve(ctx context.Context, w http.ResponseWriter, r *http.Request, params map[string]string) error {
+
+	ctx, span := trace.StartSpan(ctx, "handlers.User.retrieve")
+	defer span.End()
+
 	dbConn := u.MasterDB.Copy()
 
 	defer dbConn.Close()
@@ -60,6 +69,10 @@ func (u *User) Retrieve(ctx context.Context, w http.ResponseWriter, r *http.Requ
 
 // Create inserts a new user into the system
 func (u *User) Create(ctx context.Context, w http.ResponseWriter, r *http.Request, params map[string]string) error {
+
+	ctx, span := trace.StartSpan(ctx, "handlers.User.create")
+	defer span.End()
+
 	dbConn := u.MasterDB.Copy()
 
 	defer dbConn.Close()
@@ -82,6 +95,10 @@ func (u *User) Create(ctx context.Context, w http.ResponseWriter, r *http.Reques
 
 // Update updates the specified user in the system
 func (u *User) Update(ctx context.Context, w http.ResponseWriter, r *http.Request, params map[string]string) error {
+
+	ctx, span := trace.StartSpan(ctx, "handlers.User.update")
+	defer span.End()
+
 	dbConn := u.MasterDB.Copy()
 
 	var usr user.CreateUser
@@ -101,6 +118,10 @@ func (u *User) Update(ctx context.Context, w http.ResponseWriter, r *http.Reques
 
 // Delete removed the specified user from the system
 func (u *User) Delete(ctx context.Context, w http.ResponseWriter, r *http.Request, params map[string]string) error {
+
+	ctx, span := trace.StartSpan(ctx, "handlers.User.delete")
+	defer span.End()
+
 	dbConn := u.MasterDB.Copy()
 	defer dbConn.Close()
 
